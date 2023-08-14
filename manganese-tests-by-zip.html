@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Public Health Watch - Manganese</title>
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <style>
+      .mapboxgl-popup {
+        max-width: 300px;
+        font-family: sans-serif;
+      }
+
+      #legend {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        padding: 10px;
+        background: #fff;
+        opacity: 0.9;
+        font-family: ui-sans-serif, sans-serif;
+        font-size: 11px;
+        line-height: 1.2;
+        z-index: 1000;
+        border-radius: 5px;
+        width: 105px;
+      }
+      .legend-title {
+        margin: 0 0 10px;
+        font-weight: bold;
+      }
+
+      div.legend-item {
+        margin-bottom: 5px;
+      }
+      div.legend-item:first {
+        margin-top: 10px;
+      }
+      div.legend-key {
+        width: 8px !important;
+        height: 8px !important;
+        border: 1px solid;
+        display: inline-block;
+        margin-right: 5px;
+      }
+
+      .mapboxgl-popup-content p {
+        margin-block: 0;
+      }
+      .mapboxgl-popup-content h3 {
+        margin-block: 0;
+      }
+    </style>
+    <div id="map"></div>
+    <div id="legend">
+      <p class="legend-title">Manganese in Public Water Systems</p>
+    </div>
+    <script>
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoiYnZhbmthdCIsImEiOiJjbGlhcWMxN3EwNTh4M3FwZm9rMHc2bzF1In0.X8-leMEv82U5tPxo1eaa-A";
+      // Create a new map.
+      const map = new mapboxgl.Map({
+        container: "map",
+        // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+        style: "mapbox://styles/bvankat/clid1het2002s01qvatm66mer",
+        center: [-99, 42],
+        zoom: 4,
+        minZoom: 4,
+        maxZoom: 10
+      });
+
+      map.on("load", () => {
+        // Legend details
+        const layers = [
+          "Above 300 µg/L", // red
+          "50.1 - 300 µg/L", // blue
+          "0.1 - 50 µg/L", // light red
+          "Zero" // white
+        ];
+        const colors = [
+          "#800000", // dark red
+          "#db4d4d", // red
+          "#e6bcbc", // light red
+          "#fff" // white
+        ];
+
+        // create legend
+        const legend = document.getElementById("legend");
+
+        layers.forEach((layer, i) => {
+          const color = colors[i];
+          const item = document.createElement("div");
+          item.className = "legend-item";
+          const key = document.createElement("div");
+          key.className = "legend-key";
+          key.style.backgroundColor = color;
+
+          const value = document.createElement("span");
+          value.innerHTML = `${layer}`;
+          item.appendChild(key);
+          item.appendChild(value);
+          legend.appendChild(item);
+        });
+      });
+
+      // When a click event occurs on a feature,
+      // open a popup at the location of the click, with description
+      // HTML from the click event's properties.
+      map.on("click", "PWSIDs", (e) => {
+        new mapboxgl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(
+            "<h3>" +
+              e.features[0].properties.PWSName +
+              "</h3><p><strong>" +
+              e.features[0].properties.FacilityName +
+              "</strong></p><p>Manganese Level: " +
+              e.features[0].properties.AnalyticalResultValue +
+              " µg/L</p><p>Collection Date: " +
+              e.features[0].properties.CollectionDate +
+              "</p><p>State: " +
+              e.features[0].properties.State +
+              "</p><p>ZIP Code: " +
+              e.features[0].properties.GEOID10 +
+              "</p>"
+          )
+          .addTo(map);
+      });
+
+      // Change the cursor to a pointer when
+      // the mouse is over the states layer.
+      map.on("mouseenter", "PWSIDs", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+
+      // Change the cursor back to a pointer
+      // when it leaves the states layer.
+      map.on("mouseleave", "PWSIDs", () => {
+        map.getCanvas().style.cursor = "";
+      });
+
+      map.addControl(new mapboxgl.NavigationControl());
+      map.addControl(new mapboxgl.FullscreenControl());
+    </script>
+  </body>
+</html>
